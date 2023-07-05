@@ -1,0 +1,110 @@
+---
+title: "ricapps_bibliometrix"
+---
+
+## Análisis Bibliométrico RICAPPS
+
+```{r}
+
+```
+
+```{r}
+# | echo: false
+# | warning: false
+library(dplyr)
+library(ggplot2)
+library(here)
+library(bibliometrix)
+library(ragg)
+
+file <- here("data", "pubmed-RICAPPSAff-set.txt")
+
+M <- convert2df(file = file, dbsource = "pubmed", 
+                format = "plaintext")
+
+results <- biblioAnalysis(M, sep = ";")
+
+options(width = 100)
+S <- summary(object = results, k = 10, pause = FALSE)
+```
+
+```{r}
+plot(x = results, k = 10, pause = FALSE)
+```
+
+```{r}
+DF <- dominance(results, k = 10)
+DF
+```
+
+```{r}
+indices <- Hindex(M, field = "author", elements = "AGUILAR-LATORRE A",
+                  sep = ";", years = 10)
+
+indices$H
+
+indices$CitationList
+```
+
+```{r}
+topAU <- authorProdOverTime(M, k = 10, graph = TRUE)
+# topAU
+
+head(topAU$dfAU)
+```
+
+```{r}
+L <- lotka(results)
+
+# Author Productivity. Empirical Distribution
+L$AuthorProd
+
+L$Beta
+
+L$C
+
+L$R2
+
+L$p.value
+
+# Observed distribution
+Observed=L$AuthorProd[,3]
+
+# Theoretical distribution with Beta = 2
+Theoretical=10^(log10(L$C)-2*log10(L$AuthorProd[,1]))
+
+
+```
+
+```{r}
+# Observed distribution
+Observed=L$AuthorProd[,3]
+
+# Theoretical distribution with Beta = 2
+Theoretical=10^(log10(L$C)-2*log10(L$AuthorProd[,1]))
+
+plot(L$AuthorProd[,1],Theoretical,type="l",col="red",ylim=c(0, 1), xlab="Articles",ylab="Freq. of Authors",main="Scientific Productivity")
+lines(L$AuthorProd[,1],Observed,col="blue")
+legend(x="topright",c("Theoretical (B=2)","Observed"),col=c("red","blue"),lty = c(1,1,1),cex=0.6,bty="n")
+```
+
+```{r}
+
+# network Manuscript x Publication Source
+A <- cocMatrix(M, Field = "SO", sep = ";")
+
+sort(Matrix::colSums(A), decreasing = TRUE)[1:5]
+```
+
+```{r}
+# Citation network
+# "Matrix is empty!!"
+# Ac <- cocMatrix(M, Field = "CR", sep = ".  ")
+
+```
+
+```{r}
+# Author network
+Au <- cocMatrix(M, Field = "AU", sep = ";")
+sort(Matrix::colSums(Au), decreasing = TRUE)[1:5]
+```
